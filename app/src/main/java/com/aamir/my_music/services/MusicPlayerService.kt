@@ -5,10 +5,12 @@ import android.app.Service
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.media.MediaPlayer
+import android.media.session.MediaSession
 import android.net.Uri
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
+import android.support.v4.media.session.MediaSessionCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.aamir.my_music.R
@@ -97,7 +99,7 @@ class MusicPlayerService : Service() {
         }
     }
 
-    private fun prev(){
+    fun prev(){
         job?.cancel()
         mediaPlayer.reset()
         mediaPlayer = MediaPlayer()
@@ -131,11 +133,11 @@ class MusicPlayerService : Service() {
         }
     }
 
-    private fun playPause(){
+    fun playPause(){
         if (mediaPlayer.isPlaying){
             mediaPlayer.pause()
         } else{
-            mediaPlayer.release()
+            mediaPlayer.start()
         }
         sendNotification(currentTrack.value)
     }
@@ -155,9 +157,14 @@ class MusicPlayerService : Service() {
     private fun getRawUri(id: Int) = Uri.parse("android.resource://$packageName/${id}")
 
     private fun sendNotification(track: Track) {
+        val session = MediaSessionCompat(this, "music")
+
+
+
         isPlaying.update { mediaPlayer.isPlaying }
         val style = androidx.media.app.NotificationCompat.MediaStyle()
-            .setShowActionsInCompactView(0,1,2)
+            .setShowActionsInCompactView(0,1,2).
+                setMediaSession(session.sessionToken)
 
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setStyle(style)
